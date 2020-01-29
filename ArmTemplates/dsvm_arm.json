@@ -1,27 +1,27 @@
 {
-    "contentVersion": "1.0.0.0",
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
     "parameters": {
         "adminUsername": {
-            "type": "string",
+            "type": "String",
             "metadata": {
                 "description": "Username for the Virtual Machine"
             }
         },
         "adminPassword": {
-            "type": "securestring",
+            "type": "SecureString",
             "metadata": {
                 "description": "Password for the Virtual Machine"
             }
         },
         "vmName": {
-            "type": "string",
+            "type": "String",
             "metadata": {
                 "description": "Name for the Virtual Machine"
             }
         },
         "vmSize": {
-            "type": "string",
+            "type": "String",
             "metadata": {
                 "description": "Size for the Virtual Machine"
             }
@@ -32,8 +32,9 @@
         "location": "[resourceGroup().location]",
         "imagePublisher": "microsoft-ads",
         "imageOffer": "windows-data-science-vm",
-        "sku": "windows2016",
-        "version": "03.25.19",
+        "sku": "windows2016byol",
+        "version": "20.02.10",
+        "urn": "microsoft-ads:windows-data-science-vm:windows2016byol:20.02.10",
         "OSDiskName": "osdiskforwindowssimple",
         "nicName": "[parameters('vmName')]",
         "addressPrefix": "10.0.0.0/16",
@@ -53,16 +54,16 @@
     "resources": [
         {
             "type": "Microsoft.Storage/storageAccounts",
-            "name": "[variables('storageAccountName')]",
             "apiVersion": "2015-05-01-preview",
+            "name": "[variables('storageAccountName')]",
             "location": "[variables('location')]",
             "properties": {
                 "accountType": "[variables('storageAccountType')]"
             }
         },
         {
-            "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2015-05-01-preview",
             "name": "[variables('publicIPAddressName')]",
             "location": "[variables('location')]",
             "properties": {
@@ -73,8 +74,8 @@
             }
         },
         {
-            "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2015-05-01-preview",
             "name": "[variables('virtualNetworkName')]",
             "location": "[variables('location')]",
             "properties": {
@@ -94,8 +95,8 @@
             }
         },
         {
-            "apiVersion": "2015-05-01-preview",
             "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2015-05-01-preview",
             "name": "[variables('nicName')]",
             "location": "[variables('location')]",
             "dependsOn": [
@@ -120,22 +121,22 @@
             }
         },
         {
-            "apiVersion": "2015-06-15",
             "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2015-06-15",
             "name": "[parameters('vmName')]",
             "location": "[variables('location')]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+            ],
+            "tags": {
+                "Application": "DataScience"
+            },
             "plan": {
                 "name": "[variables('sku')]",
                 "publisher": "[variables('imagePublisher')]",
                 "product": "[variables('imageOffer')]"
             },
-            "tags": {
-                "Application": "DataScience"
-            },
-            "dependsOn": [
-                "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
-                "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
-            ],
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "[variables('vmSize')]"
@@ -179,24 +180,24 @@
     ],
     "outputs": {
         "vmUrl": {
-            "value": "[concat('https://ms.portal.azure.com/#resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Compute/virtualMachines/', parameters('vmName'))]",
-            "type": "string"
+            "type": "String",
+            "value": "[concat('https://ms.portal.azure.com/#resource/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Compute/virtualMachines/', parameters('vmName'))]"
         },
         "vmFqdn": {
-            "value": "[reference( variables('publicIPAddressName')).dnsSettings.fqdn]",
-            "type": "string"
+            "type": "String",
+            "value": "[reference( variables('publicIPAddressName')).dnsSettings.fqdn]"
         },
         "vmAdminUsername": {
-            "value": "[parameters('adminUsername')]",
-            "type": "string"
+            "type": "String",
+            "value": "[parameters('adminUsername')]"
         },
         "vmAdminPassword": {
-            "value": "[parameters('adminPassword')]",
-            "type": "string"
+            "type": "String",
+            "value": "[parameters('adminPassword')]"
         },
         "sqlServerName": {
-            "value": "[parameters('vmName')]",
-            "type": "string"
+            "type": "String",
+            "value": "[parameters('vmName')]"
         }
     }
 }
